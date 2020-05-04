@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper  namespace="com.cosin.servicecomb.provider.application.mapper.ProjectQuotaMapper">
+	<resultMap id="BaseResultMap"
+		type="com.cosin.servicecomb.api.model.ProjectQuotaModel">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="limit" property="limit" jdbcType="BIGINT" />
+		<result column="used" property="used" jdbcType="BIGINT" />
+		<result column="reserved" property="reserved" jdbcType="BIGINT" />
+		<result column="owner_id" property="ownerId" jdbcType="VARCHAR" />
+		<result column="type" property="type" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="list"
+		parameterType="com.cosin.servicecomb.api.model.ListQuotaRequestDto"
+		resultMap="BaseResultMap">
+		SELECT id,create_time,update_time,`limit`,owner_id,type,used,reserved FROM identity_project_quota
+		where 1=1
+		<if test="ownerIds != null and ownerIds.size()>0">
+			and owner_id in
+			<foreach item="ownerIds" index="index" collection="ownerIds"
+				open="(" separator="," close=")">
+				#{ownerIds}
+			</foreach>
+		</if>
+		<if test="type != null and type != ''">
+			and type=#{type}
+		</if>
+	</select>
+	<select id="query"
+		parameterType="com.cosin.servicecomb.api.model.ListQuotaRequestDto"
+		resultMap="BaseResultMap">
+		SELECT id,create_time,update_time,`limit`,owner_id,type,used,reserved FROM identity_project_quota
+		where 1=1
+		<if test="ownerIds != null and ownerIds.size()>0">
+			and owner_id in
+			<foreach item="ownerIds" index="index" collection="ownerIds"
+				open="(" separator="," close=")">
+				#{ownerIds}
+			</foreach>
+		</if>
+		<if test="type != null and type != ''">
+			and type=#{type}
+		</if>
+	</select>
+	<insert id="add" parameterType="java.util.List"
+		useGeneratedKeys="true">
+		INSERT INTO identity_project_quota(
+		create_time,
+		update_time,
+		`limit`,
+		owner_id,
+		type,
+		used,
+		reserved) VALUES
+		(#{createTime},#{updateTime},#{limit},#{ownerId},#{type},#{used},#{reserved})
+	</insert>
+	<insert id="batchAdd" parameterType="java.util.List"
+		useGeneratedKeys="true">
+		INSERT INTO identity_project_quota(
+		create_time,
+		update_time,
+		`limit`,
+		owner_id,
+		type,
+		used,
+		reserved) VALUES
+		<foreach collection="list" item="quotas" index="index"
+			separator=",">
+			<trim prefix="(" suffix=")" suffixOverrides=",">
+				<if test="quotas.createTime != null">
+					#{quotas.createTime,jdbcType=TIMESTAMP},
+				</if>
+				<if test="quotas.updateTime != null">
+					#{quotas.updateTime,jdbcType=TIMESTAMP},
+				</if>
+				<if test="quotas.limit != null">
+					#{quotas.limit,jdbcType=BIGINT},
+				</if>
+				<if test="quotas.ownerId != null">
+					#{quotas.ownerId,jdbcType=VARCHAR},
+				</if>
+				<if test="quotas.type != null">
+					#{quotas.type,jdbcType=VARCHAR},
+				</if>
+				<if test="quotas.used != null">
+					#{quotas.used,jdbcType=BIGINT},
+				</if>
+				<if test="quotas.reserved != null">
+					#{quotas.reserved,jdbcType=BIGINT},
+				</if>
+			</trim>
+		</foreach>
+	</insert>
+	<update id="modify"
+		parameterType="com.cosin.servicecomb.api.model.ProjectQuotaModel">
+		update identity_project_quota
+		<set>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="limit != null">
+				`limit` = #{limit,jdbcType=BIGINT},
+			</if>
+			<if test="ownerId != null">
+				owner_id = #{ownerId,jdbcType=VARCHAR},
+			</if>
+			<if test="type != null">
+				type = #{type,jdbcType=VARCHAR},
+			</if>
+			<if test="used != null">
+				used = #{used,jdbcType=BIGINT},
+			</if>
+			<if test="reserved != null">
+				reserved = #{reserved,jdbcType=BIGINT},
+			</if>
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<delete id="deleteByOwnerId" parameterType="java.lang.String">
+		DELETE FROM identity_project_quota
+		WHERE owner_id = #{ownerId,jdbcType=VARCHAR}
+	</delete>
+	
+	<insert id="addReserve" parameterType="com.cosin.servicecomb.api.model.ProjectQuotaReserveModel"
+		useGeneratedKeys="true">
+		INSERT INTO identity_quota_reserve(
+		create_time,
+		update_time,
+		reserve_id,
+		status,
+		quotas) VALUES
+		(#{createTime},#{updateTime},#{reserveId},#{status},#{quotas})
+	</insert>
+	<update id="updateReserve"
+		parameterType="com.cosin.servicecomb.api.model.ProjectQuotaReserveModel">
+		update identity_quota_reserve
+		<set>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="status != null">
+				status = #{status,jdbcType=VARCHAR}
+			</if>
+		</set>
+		where reserve_id = #{reserveId,jdbcType=BIGINT}
+	</update>
+	
+	<select id="listReserveQuota"
+		parameterType="com.cosin.servicecomb.api.model.ProjectQuotaReserveModel"
+		resultType="com.cosin.servicecomb.api.model.ProjectQuotaReserveModel">
+		SELECT id,reserve_id,quotas,`status`,create_time,update_time FROM identity_quota_reserve
+		where 1=1
+		<if test="reserveId != null and reserveId != ''">
+			and reserve_id=#{reserveId}
+		</if>
+		<if test="status != null and status != ''">
+			and status=#{status}
+		</if>
+		<if test="createTime != null">
+			and	(TO_DAYS( NOW( ) ) - TO_DAYS(create_time) &lt;= 2)
+		</if>
+	</select>
+	
+	<select id="countStatistic" resultType="com.cosin.servicecomb.api.model.QuotaStatistic">
+	    Select
+	    sum(`limit`) as total,
+	    sum(used) + SUM(reserved) as used,
+	    owner_id as ownerId
+	    From identity_project_quota
+	    Where 1=1
+	    <if test="clazz != null">
+	      and type = #{clazz,jdbcType=VARCHAR}
+	    </if>
+	    <if test="ownerIds != null and ownerIds.size()>0">
+	      and owner_id in
+	      <foreach item="ownerIds" index="index" collection="ownerIds" open="(" separator="," close=")">
+	        #{ownerIds}
+	      </foreach>
+	    </if>
+	    <if test="isUsed != null and isUsed">
+	    	and used > 0
+	    </if>
+	    GROUP BY owner_id
+	    <if test="sortType !=null and sortType == 'ASC'">
+	      ORDER BY used ASC
+	    </if>
+	    <if test="sortType !=null and sortType == 'DESC'">
+	      ORDER BY used DESC
+	    </if>
+	    <if test="sortType == null">
+	      ORDER BY used DESC
+	    </if>
+	    <if test="limit != null">
+	      limit #{limit}
+	    </if>
+  </select>
+
+  <select id="selectNoBareMachineTypeIds" resultType="java.lang.String" parameterType="java.lang.String">
+        select DISTINCT owner_id 
+        from identity_project_quota
+		where owner_id not in (select owner_id from identity_project_quota where type = #{type}) 
+  </select>
+
+  <select id="selectNoLoadBalancerTypeIds" resultType="java.lang.String" parameterType="java.lang.String">
+       select DISTINCT owner_id 
+       from identity_project_quota
+	   where owner_id not in (select owner_id from identity_project_quota where type = #{type}) 
+  </select>
+
+  <select id="selectNoElasticIpTypeIds" resultType="java.lang.String" parameterType="java.lang.String">
+      select DISTINCT owner_id 
+      from identity_project_quota
+	  where owner_id not in (select owner_id from identity_project_quota where type = #{type})
+  </select>
+
+  <insert id="addBatchInsert">
+        insert into identity_project_quota(create_time, update_time, `limit`, owner_id, type, used, reserved)
+        values
+        <foreach collection="ownerIds" item="item" index="index" separator=",">
+            (now(), now(), 0, #{item} , #{type}, 0, 0)
+        </foreach>
+  </insert>
+</mapper>

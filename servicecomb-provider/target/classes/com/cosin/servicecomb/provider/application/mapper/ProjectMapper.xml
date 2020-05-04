@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cosin.servicecomb.provider.application.mapper.ProjectMapper">
+    <resultMap id="BaseResultMap" type="com.cosin.servicecomb.api.model.Project">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="resource_id" jdbcType="VARCHAR" property="resourceId"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+        <result column="begin_time" jdbcType="TIMESTAMP" property="beginTime"/>
+        <result column="expiration_time" jdbcType="TIMESTAMP" property="expirationTime"/>
+        <result column="creator_id" jdbcType="VARCHAR" property="creatorId"/>
+        <result column="creator_name" jdbcType="VARCHAR" property="creatorName"/>
+        <result column="vdc_id" jdbcType="VARCHAR" property="vdcId"/>
+        <result column="vdc_name" jdbcType="VARCHAR" property="vdcName"/>
+        <result column="del_ak" jdbcType="VARCHAR" property="delAk"/>
+        <result column="del_sk" jdbcType="VARCHAR" property="delSk"/>
+        <result column="creatorLoginName" jdbcType="VARCHAR" property="creatorLoginName"/>
+        <result column="is_deleted" jdbcType="SMALLINT" property="isDeleted"/>
+        <result column="is_sync" jdbcType="SMALLINT" property="isSync"/>
+        <result column="virtualMachineCount" jdbcType="INTEGER"
+                property="virtualMachineCount"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <!--<collection property="users" select="selectProjectUserByProjectId"-->
+        <!--column="projectId=id,coverDel=coverDel" />-->
+        <!--<collection property="aks" select="selectAkByVdcId"-->
+        <!--column="projectId=id" />-->
+    </resultMap>
+
+
+    <select id="getProjectById" resultMap="BaseResultMap">
+        select O.*,#{coverDel} as coverDel,L.name as creatorName, L.login_name
+        as creatorLoginName, m.virtualMachineCount, V.name as vdc_name
+        from identity_project O left join identity_user L on O.creator_id = L.id
+        and L.is_deleted = 0
+        left join identity_vdc V on O.vdc_id = V.id
+        left join (select count(id) as virtualMachineCount,project_id
+        from identity_project_resource where project_id = #{projectId})m on O.id =
+        m.project_id
+        <where>
+            O.id = #{projectId}
+            <if test="coverDel == null or coverDel == false">
+                and O.is_deleted = 0
+            </if>
+        </where>
+    </select>
+
+</mapper>

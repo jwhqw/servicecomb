@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cosin.servicecomb.provider.application.mapper.VdcQuotaMapper">
+    <resultMap id="BaseResultMap" type="com.cosin.servicecomb.provider.model.VdcQuota">
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="vdc_id" jdbcType="VARCHAR" property="vdcId"/>
+        <result column="limit" jdbcType="INTEGER" property="limit"/>
+        <result column="remain" jdbcType="INTEGER" property="remain"/>
+        <result column="type" jdbcType="VARCHAR" property="type"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    id, vdc_id, `limit`, remain, type, create_time, update_time
+  </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from identity_vdc_quota
+        where id = #{id,jdbcType=VARCHAR}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from identity_vdc_quota
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+    <insert id="insert" parameterType="com.cosin.servicecomb.provider.model.VdcQuota">
+    insert into identity_vdc_quota (id, vdc_id, `limit`, 
+      remain, type, create_time, 
+      update_time)
+    values (#{id,jdbcType=VARCHAR}, #{vdcId,jdbcType=VARCHAR}, #{limit,jdbcType=INTEGER}, 
+      #{remain,jdbcType=INTEGER}, #{type,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+    <insert id="insertSelective" parameterType="com.cosin.servicecomb.provider.model.VdcQuota">
+        insert into identity_vdc_quota
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="vdcId != null">
+                vdc_id,
+            </if>
+            <if test="limit != null">
+                `limit`,
+            </if>
+            <if test="remain != null">
+                remain,
+            </if>
+            <if test="type != null">
+                type,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=VARCHAR},
+            </if>
+            <if test="vdcId != null">
+                #{vdcId,jdbcType=VARCHAR},
+            </if>
+            <if test="limit != null">
+                #{limit,jdbcType=INTEGER},
+            </if>
+            <if test="remain != null">
+                #{remain,jdbcType=INTEGER},
+            </if>
+            <if test="type != null">
+                #{type,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.cosin.servicecomb.provider.model.VdcQuota">
+        update identity_vdc_quota
+        <set>
+            <if test="vdcId != null">
+                vdc_id = #{vdcId,jdbcType=VARCHAR},
+            </if>
+            <if test="limit != null">
+                `limit` = #{limit,jdbcType=INTEGER},
+            </if>
+            <if test="remain != null">
+                remain = #{remain,jdbcType=INTEGER},
+            </if>
+            <if test="type != null">
+                type = #{type,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=VARCHAR}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.cosin.servicecomb.provider.model.VdcQuota">
+    update identity_vdc_quota
+    set vdc_id = #{vdcId,jdbcType=VARCHAR},
+      `limit` = #{limit,jdbcType=INTEGER},
+      remain = #{remain,jdbcType=INTEGER},
+      type = #{type,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+    <select id="selectByVdcId" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from identity_vdc_quota
+        where vdc_id = #{vdcId,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="addBatch" parameterType="java.util.List">
+        insert into identity_vdc_quota (id, vdc_id, `limit`, remain, type, create_time, update_time)
+        values
+        <foreach collection="quotaList" item="item" index="index" separator=",">
+            (#{item.id}, #{item.vdcId}, #{item.limit}, #{item.remain}, #{item.type}, #{item.createTime},
+            #{item.updateTime})
+        </foreach>
+    </insert>
+
+    <delete id="deleteQuotaByVdcIds">
+        delete from identity_vdc_quota
+        where vdc_id IN
+        <foreach collection="vdcIds" item="item" index="index" open="(" close=")" separator=",">
+            (#{item})
+        </foreach>
+    </delete>
+
+    <update id="updateQuotas" parameterType="java.util.List">
+        <foreach collection="quotas" item="item" index="index" separator=";">
+            update identity_vdc_quota
+            <set>
+                remain=#{item.remain}, update_time=#{item.updateTime}
+            </set>
+            <where>
+                vdc_id=#{item.vdcId} AND `type`=#{item.type}
+            </where>
+        </foreach>
+    </update>
+
+    <select id="selectQuotaBySourceType" parameterType="java.util.List" resultType="java.lang.Integer">
+        select SUM(A.`used`) as used from identity_project_quota A
+        LEFT JOIN identity_project B on A.owner_id = B.id
+        <where>
+            B.is_deleted = 0
+            <if test="vdcIds != null and vdcIds.size > 0">
+                and B.vdc_id in
+                <foreach collection="vdcIds" item="item" index="index" open="("
+                         close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+
+            <if test="type != null">
+                and A.type = #{type}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="selectNoBareMachineTypeIds" resultType="java.lang.String">
+        select DISTINCT vdc_id
+        from identity_vdc_quota
+        where vdc_id not in (select vdc_id from identity_vdc_quota where type = #{type}) ;
+  </select>
+
+    <select id="selectNoLoadBalancerTypeIds" resultType="java.lang.String">
+        select DISTINCT vdc_id
+        from identity_vdc_quota
+        where vdc_id not in (select vdc_id from identity_vdc_quota where type = #{type}) ;
+  </select>
+
+    <select id="selectNoElasticIpTypeIds" resultType="java.lang.String">
+        select DISTINCT vdc_id
+        from identity_vdc_quota
+        where vdc_id not in (select vdc_id from identity_vdc_quota where type = #{type}) ;
+  </select>
+
+    <insert id="addBatchInsert">
+        insert into identity_vdc_quota(id, vdc_id, `limit`, remain, type, create_time, update_time)
+        values
+        <foreach collection="vdcIds" item="item" index="index" separator=",">
+            (UUID(), #{item}, 0, 0, #{type}, now(), now())
+        </foreach>
+    </insert>
+</mapper>

@@ -1,0 +1,3 @@
+com\cosin\servicecomb\consumer\service\RpcServiceImpl.class
+com\cosin\servicecomb\consumer\RpcConsumerApplication.class
+com\cosin\servicecomb\consumer\controller\RpcConsumerController.class

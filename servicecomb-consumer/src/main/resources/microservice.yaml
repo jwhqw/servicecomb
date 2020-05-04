@@ -1,0 +1,19 @@
+APPLICATION_ID: start.servicecomb.huayun
+service_description:
+  name: consumer
+  version: 0.0.2
+  environment: development
+  properties:
+      allowCrossApp: true
+servicecomb:
+  handler:
+      chain:
+        Provider: {}
+  highway:
+    address: 0.0.0.0:9091
+  service:
+    registry:
+#      address: http://172.16.139.60:30100
+      address: http://10.0.20.50:30100
+      autodiscovery: false
+#      address: http://127.0.0.1:30100

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cosin.servicecomb.provider.application.mapper.UserMapper">
+  <resultMap id="BaseResultMap" type="com.cosin.servicecomb.provider.model.User">
+    <id column="id" jdbcType="VARCHAR" property="id"/>
+    <result column="login_name" jdbcType="VARCHAR" property="loginName"/>
+    <result column="name" jdbcType="VARCHAR" property="name"/>
+    <result column="description" jdbcType="VARCHAR" property="description"/>
+    <result column="password" jdbcType="VARCHAR" property="password"/>
+    <result column="status" jdbcType="VARCHAR" property="status"/>
+    <result column="email" jdbcType="VARCHAR" property="email"/>
+    <result column="telephone" jdbcType="VARCHAR" property="telephone"/>
+    <result column="is_deleted" jdbcType="SMALLINT" property="isDeleted"/>
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    <result column="is_administrator_reseted" jdbcType="SMALLINT" property="isAdministratorReseted"/>
+  </resultMap>
+
+
+  <sql id="Base_Column_List">
+    id, login_name, name, description, password, status, email,
+    telephone, is_deleted, create_time, update_time,is_administrator_reseted
+  </sql>
+
+  <select id="getUserById" resultMap="BaseResultMap">
+    select
+    A.id, A.login_name, A.name, A.description, A.password, A.status,
+    A.email,
+    A.telephone, A.is_deleted, A.create_time, A.update_time, is_administrator_reseted
+    from identity_user A
+    <where>
+      A.id = #{id,jdbcType=VARCHAR}
+    </where>
+  </select>
+  
+  <select id="getUserByLoginName" resultMap="BaseResultMap">
+    select t1.* 
+    from identity_user t1 where t1.login_name = #{loginName} and t1.is_deleted=0
+  </select>
+
+
+  <select id="list" resultMap="BaseResultMap">
+    select
+    A.id,A.login_name, A.name, A.description, A.password, A.status,
+    A.email,
+    A.telephone, A.is_deleted, A.create_time, A.update_time, is_administrator_reseted
+    from identity_user A
+    <where>
+      
+      <if test="coverDel == null or coverDel == false">
+        and A.is_deleted = 0
+      </if>
+
+      <if test="loginNameLike != null">
+        and lower(A.login_name) like concat('%',lower(#{loginNameLike}),'%') ESCAPE '/'
+      </if>
+
+      <if test="nameLike != null">
+        and A.name like concat('%',#{nameLike},'%')
+      </if>
+
+      <if test="emailLike != null">
+        and A.email like concat('%',#{emailLike},'%')
+      </if>
+
+      <if test="telephoneLike != null">
+        and A.telephone like concat('%',#{telephoneLike},'%')
+      </if>
+
+      <if test="status != null">
+        and A.status = #{status,jdbcType=VARCHAR}
+      </if>
+
+      <if test="userIdsArray != null and userIdsArray.length > 0">
+        and A.id in
+        <foreach collection="userIdsArray" item="item" index="index" open="(" separator=","
+          close=")">
+          #{item}
+        </foreach>
+      </if>
+
+      <if test="loginName != null">
+        and A.login_name = #{loginName}
+      </if>
+      <if test="like != null">
+        and (lower(A.login_name) like concat('%',lower(#{like}),'%') ESCAPE '/' or A.name like concat('%',#{like},'%')  ESCAPE '/' )
+      </if>
+
+      <if test="reverseUserIds != null and reverseUserIds.length > 0">
+        and A.id not in
+        <foreach collection="reverseUserIds" item="item" index="index" open="(" separator=","
+          close=")">
+          #{item}
+        </foreach>
+      </if>
+      
+      <if test="hasNameEmail != null and hasNameEmail == true">
+      	and A.name is not null and <![CDATA[A.name != '' ]]>
+      	and A.email is not null and <![CDATA[A.email != '' ]]>
+      </if>
+
+      <if test="emailList != null and emailList.size > 0">
+            and A.email in
+          <foreach collection="emailList" item="item" index="index"
+                   open="(" close=")" separator=",">
+              #{item}
+          </foreach>
+      </if>
+
+      <if test="createStartTime != null and createStartTime != ''">
+          <![CDATA[ 
+              and DATE_FORMAT(A.create_time, '%Y-%m-%d %H:%i:%s') >=  DATE_FORMAT(#{createStartTime}, '%Y-%m-%d %H:%i:%s') 
+          ]]>
+      </if>
+
+      <if test="createEndTime != null and createEndTime != ''">
+          <![CDATA[ 
+            and DATE_FORMAT(A.create_time, '%Y-%m-%d %H:%i:%s') <=  DATE_FORMAT(#{createEndTime}, '%Y-%m-%d %H:%i:%s') 
+           ]]>
+      </if>
+        
+      <if test="createStartTime != null and createEndTime != null">
+            and A.create_time Between #{createStartTime} and #{createEndTime}
+      </if>
+      <if test="visitorId != null and visitorId.length > 0 and visitorId != '9de0a582-0f01-4a19-b9a5-d9a6452295c3' ">
+            and A.id not in ('9de0a582-0f01-4a19-b9a5-d9a6452295c3')
+      </if>
+        
+    </where>
+    <choose>
+          <when test="sortKey != null and sortKey == 'loginName'">
+              order by A.login_name
+              <if test="sortType != null and sortType == 'Desc'">
+                  desc
+              </if>
+          </when>
+          <when test="sortKey != null and sortKey == 'createTime'">
+              order by A.create_time
+              <if test="sortType != null and sortType == 'Desc'">
+                  desc
+              </if>
+          </when>
+          <otherwise>
+              order by A.create_time desc
+          </otherwise>
+    </choose>
+  </select>
+
+  <insert id="insert" parameterType="com.cosin.servicecomb.provider.model.User">
+    insert into identity_user(id,login_name,name,description,password,status,email,telephone,is_deleted,create_time,update_time,is_administrator_reseted)
+    select #{id}, #{loginName},#{name},#{description},#{password},#{status},#{email},#{telephone},#{isDeleted},#{createTime},
+    #{updateTime},#{isAdministratorReseted}
+    from dual
+    <where>
+      not exists(select id from identity_user where login_name=#{loginName} and is_deleted=0)
+    </where>
+  </insert>
+
+  <update id="update" parameterType="com.cosin.servicecomb.provider.model.User">
+    update identity_user
+    <set>
+      <if test="name != null">
+        name = #{name},
+      </if>
+      <if test="description != null">
+        description = #{description},
+      </if>
+      <if test="status != null">
+        status = #{status},
+      </if>
+      <if test="email != null">
+        email = #{email},
+      </if>
+      <if test="telephone != null">
+        telephone = #{telephone},
+      </if>
+      <if test="isDeleted != null">
+        is_deleted = #{isDeleted},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime},
+      </if>
+      <if test="isAdministratorReseted != null">
+          is_administrator_reseted = #{isAdministratorReseted}
+      </if>
+    </set>
+    <where>
+      id = #{id} and is_deleted  <![CDATA[ <> ]]> 1
+    </where>
+  </update>
+
+  <update id="delete">
+    update identity_user set is_deleted = 1
+    <where>
+      id in 
+      <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+        #{item}
+      </foreach>
+    </where>
+  </update>
+
+  <update id="updatePwd">
+    update identity_user set password = #{pwd},update_time = now() where id = #{id}
+  </update>
+
+  <!--<update id="updateUserTypeAndDepartmentId">-->
+    <!--update identity_user-->
+    <!--<set>-->
+      <!--<if test="departmentId != null">-->
+        <!--department_id = #{departmentId},-->
+      <!--</if>-->
+      <!--type=#{type}-->
+    <!--</set>-->
+    <!--<where>-->
+      <!--id in-->
+      <!--<foreach collection="ids" item="item" index="index" open="(" close=")"-->
+        <!--separator=",">-->
+        <!--#{item}-->
+      <!--</foreach>-->
+    <!--</where>-->
+  <!--</update>-->
+
+  <select id="getLoginNameCount" resultType="Integer">
+    select count(id) from identity_user where login_name = #{name} and is_deleted=0
+  </select>
+  
+  <update id="updateUserStatus">
+  	update identity_user set status = #{status},update_time=#{updateTime}
+  	<where>
+  	id in
+      <foreach collection="ids" item="item" index="index" open="(" close=")"
+        separator=",">
+        #{item}
+      </foreach>
+      and is_deleted = 0
+  	</where>
+  </update>
+
+    <update id="updateAdminInfo">
+        update identity_user set is_administrator_reseted = #{isAdministratorReseted} ,update_time = now()  where id = #{id}
+    </update>
+    
+</mapper>
